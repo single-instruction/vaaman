@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:docs.vicharak.in)"
+      "WebFetch(domain:docs.vicharak.in)",
+      "Bash(iverilog:*)",
+      "Bash(vvp sha256_sim:*)",
+      "Bash(vvp sha3_sim:*)"
     ]
   }
 }
