@@ -48,9 +48,7 @@ module sha3_core (
     output reg ready                     // Ready for new input
 );
 
-    // ========================================================================
     // State Machine States
-    // ========================================================================
     localparam [1:0] IDLE     = 2'd0;  // Waiting for input
     localparam [1:0] ABSORB   = 2'd1;  // Absorbing input
     localparam [1:0] PERMUTE  = 2'd2;  // Running Keccak-f permutation
@@ -60,22 +58,16 @@ module sha3_core (
     reg [4:0] round_counter;  // 0-23 for 24 rounds
     reg last_block;           // Remember if this is the last block
 
-    // ========================================================================
     // Keccak State: 5x5 array of 64-bit lanes (1600 bits total)
-    // ========================================================================
     reg [63:0] A [0:4][0:4];  // State array A[x][y]
     integer x, y;             // Loop variables
 
-    // ========================================================================
     // Temporary arrays for permutation steps
-    // ========================================================================
     reg [63:0] C [0:4];       // Column parity
     reg [63:0] D [0:4];       // Theta step
     reg [63:0] B [0:4][0:4];  // Intermediate state
 
-    // ========================================================================
     // Rotation Offsets for Rho step
-    // ========================================================================
     function [5:0] rho_offset;
         input [2:0] xi;  // x coordinate
         input [2:0] yi;  // y coordinate
@@ -111,9 +103,7 @@ module sha3_core (
         end
     endfunction
 
-    // ========================================================================
     // Round Constants for Iota step
-    // ========================================================================
     function [63:0] RC;
         input [4:0] round;
         begin
@@ -147,9 +137,7 @@ module sha3_core (
         end
     endfunction
 
-    // ========================================================================
     // Rotate Left Function (for 64-bit lanes)
-    // ========================================================================
     function [63:0] rotl64;
         input [63:0] x;
         input [5:0] n;
@@ -158,9 +146,7 @@ module sha3_core (
         end
     endfunction
 
-    // ========================================================================
     // Byte Swap Function (convert between big-endian and little-endian)
-    // ========================================================================
     function [63:0] byte_swap64;
         input [63:0] x;
         begin
@@ -169,9 +155,7 @@ module sha3_core (
         end
     endfunction
 
-    // ========================================================================
     // Keccak-f[1600] Permutation (One Round)
-    // ========================================================================
     // This executes one complete round of theta, rho, pi, chi, iota
     // We'll implement this as combinational logic that updates A in one cycle
 
@@ -179,9 +163,7 @@ module sha3_core (
         input [4:0] round_idx;
         integer xi, yi;
         begin
-            // ================================================================
             // Step 1: Theta (θ)
-            // ================================================================
             // Compute column parity: C[x] = A[x,0] ⊕ A[x,1] ⊕ A[x,2] ⊕ A[x,3] ⊕ A[x,4]
             for (xi = 0; xi < 5; xi = xi + 1) begin
                 C[xi] = A[xi][0] ^ A[xi][1] ^ A[xi][2] ^ A[xi][3] ^ A[xi][4];
@@ -199,9 +181,7 @@ module sha3_core (
                 end
             end
 
-            // ================================================================
             // Step 2: Rho (ρ) and Pi (π) combined
-            // ================================================================
             // Rho: Rotate each lane by fixed offset
             // Pi: Rearrange lanes
             // Combined: B[y, 2x+3y] = ROT(A[x,y], r[x,y])
@@ -212,9 +192,7 @@ module sha3_core (
                 end
             end
 
-            // ================================================================
             // Step 3: Chi (χ)
-            // ================================================================
             // A[x,y] = B[x,y] ⊕ ((~B[x+1,y]) & B[x+2,y])
             for (xi = 0; xi < 5; xi = xi + 1) begin
                 for (yi = 0; yi < 5; yi = yi + 1) begin
@@ -222,17 +200,13 @@ module sha3_core (
                 end
             end
 
-            // ================================================================
             // Step 4: Iota (ι)
-            // ================================================================
             // A[0,0] = A[0,0] ⊕ RC[round]
             A[0][0] = A[0][0] ^ RC(round_idx);
         end
     endtask
 
-    // ========================================================================
     // Main State Machine
-    // ========================================================================
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state <= IDLE;
@@ -250,9 +224,7 @@ module sha3_core (
 
         end else begin
             case (state)
-                // ============================================================
                 // IDLE: Wait for start signal
-                // ============================================================
                 IDLE: begin
                     ready <= 1'b1;
                     if (start) begin
@@ -262,9 +234,7 @@ module sha3_core (
                     end
                 end
 
-                // ============================================================
                 // ABSORB: XOR message block into state (first r=1088 bits)
-                // ============================================================
                 ABSORB: begin
                     // XOR message into first 1088 bits of state (17 64-bit lanes)
                     // SHA-3 uses little-endian lane ordering, so byte-swap each lane
@@ -308,9 +278,7 @@ module sha3_core (
                     state <= PERMUTE;
                 end
 
-                // ============================================================
                 // PERMUTE: Execute 24 rounds of Keccak-f[1600]
-                // ============================================================
                 PERMUTE: begin
                     // Execute one round
                     keccak_round(round_counter);
@@ -327,9 +295,7 @@ module sha3_core (
                     end
                 end
 
-                // ============================================================
                 // SQUEEZE: Extract output (first 256 bits)
-                // ============================================================
                 SQUEEZE: begin
                     // Extract first 256 bits (4 lanes) as hash output
                     // Byte-swap each lane back to big-endian for output

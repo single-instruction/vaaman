@@ -40,9 +40,7 @@ module sha256_core (
     output reg ready                    // Ready for new input
 );
 
-    // ========================================================================
     // State Machine States
-    // ========================================================================
     localparam [2:0] IDLE    = 3'd0;  // Waiting for input
     localparam [2:0] LOAD    = 3'd1;  // Loading message into W[0..15]
     localparam [2:0] PREPARE = 3'd2;  // Computing W[16..63]
@@ -52,25 +50,17 @@ module sha256_core (
     reg [2:0] state, next_state;
     reg [6:0] round_counter;           // 0-63 for rounds, 16-63 for prepare
 
-    // ========================================================================
     // Hash Values (H) - Persistent across blocks
-    // ========================================================================
     reg [31:0] H0, H1, H2, H3, H4, H5, H6, H7;
 
-    // ========================================================================
     // Working Variables (a-h) - Updated each round
-    // ========================================================================
     reg [31:0] a, b, c, d, e, f, g, h;
 
-    // ========================================================================
     // Message Schedule (W) - 64 32-bit words
-    // ========================================================================
     reg [31:0] W [0:63];
     integer i;  // For loop variable
 
-    // ========================================================================
     // Round Constants (K) - First 32 bits of cube roots of first 64 primes
-    // ========================================================================
     function [31:0] K;
         input [5:0] t;
         begin
@@ -144,9 +134,7 @@ module sha256_core (
         end
     endfunction
 
-    // ========================================================================
     // SHA-256 Functions
-    // ========================================================================
 
     // Rotate right by n bits
     function [31:0] rotr;
@@ -216,14 +204,10 @@ module sha256_core (
         end
     endfunction
 
-    // ========================================================================
     // Temporary Variables for Round Computation
-    // ========================================================================
     reg [31:0] T1, T2;
 
-    // ========================================================================
     // Main State Machine
-    // ========================================================================
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             // Reset to initial state
@@ -258,9 +242,7 @@ module sha256_core (
 
         end else begin
             case (state)
-                // ============================================================
                 // IDLE: Wait for start signal
-                // ============================================================
                 IDLE: begin
                     ready <= 1'b1;
                     if (start) begin
@@ -269,9 +251,7 @@ module sha256_core (
                     end
                 end
 
-                // ============================================================
                 // LOAD: Load message block into W[0..15]
-                // ============================================================
                 LOAD: begin
                     // Reset H values for new hash (single-block mode)
                     H0 <= 32'h6a09e667;
@@ -306,9 +286,7 @@ module sha256_core (
                     state <= PREPARE;
                 end
 
-                // ============================================================
                 // PREPARE: Compute W[16..63] using message schedule
-                // ============================================================
                 PREPARE: begin
                     // W[t] = σ₁(W[t-2]) + W[t-7] + σ₀(W[t-15]) + W[t-16]
                     W[round_counter] <= sigma1(W[round_counter - 2]) +
@@ -334,9 +312,7 @@ module sha256_core (
                     end
                 end
 
-                // ============================================================
                 // PROCESS: Execute 64 compression rounds
-                // ============================================================
                 PROCESS: begin
                     // Compute T1 and T2
                     // T₁ = h + Σ₁(e) + Ch(e,f,g) + K[t] + W[t]
@@ -362,9 +338,7 @@ module sha256_core (
                     end
                 end
 
-                // ============================================================
                 // DONE: Add working variables to hash values and output
-                // ============================================================
                 DONE: begin
                     // Add working variables to hash values
                     H0 <= H0 + a;
