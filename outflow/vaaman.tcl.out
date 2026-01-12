@@ -1,0 +1,9 @@
+INFO     : Reading project database "/home/zyzyzynn/dev/vaaman/vaaman.xml" [FlowMsg::ProjectDatabaseReading]
+INFO     : Maximum concurrency has been set to 8 [FlowMsg::MaxThreads]
+INFO     : ***** Beginning Analysis ... *****
+INFO     : Analysis took 0.030124925 seconds [FlowMsg::StageDuration]
+INFO     :     Analysis took 0.03 seconds (approximately) in total CPU time [FlowMsg::StageDuration::CPUTime]
+INFO     : Analysis virtual memory usage: begin = 893.056 MB, end = 893.056 MB, delta = 0 MB [FlowMsg::VMUsage]
+INFO     : Analysis resident set memory usage: begin = 317.8 MB, end = 321.568 MB, delta = 3.768 MB [FlowMsg::RSSUsage]
+INFO     :     Analysis peak resident set memory usage = 321.568 MB [FlowMsg::RSSUsage::Peak]
+INFO     : ***** Ending Analysis ... *****
