@@ -7,9 +7,9 @@
  * https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
  *
  * How to run:
- *   iverilog -o sha3_sim ../rtl/sha3_core.v sha3_tb.v
- *   vvp sha3_sim
- *   gtkwave sha3_tb.vcd
+ *   iverilog -o ../outflow/sha3_sim ../rtl/sha3_core.v sha3_tb.v
+ *   vvp ../outflow/sha3_sim
+ *   gtkwave ../outflow/sha3_tb.vcd
  *
  * Expected behavior:
  *   - All test vectors should pass
@@ -57,7 +57,7 @@ module sha3_tb;
 
     // VCD Dump for Waveform Viewing
     initial begin
-        $dumpfile("sha3_tb.vcd");
+        $dumpfile("outflow/sha3_tb.vcd");
         $dumpvars(0, sha3_tb);
     end
 

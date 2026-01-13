@@ -569,15 +569,21 @@ endmodule
 **Simulation:**
 ```bash
 # Use iVerilog for functional verification
-iverilog -o sha256_tb sha256_core.v sha256_tb.v
-vvp sha256_tb
-gtkwave sha256_tb.vcd
+iverilog -o outflow/sha256_sim sha256_core.v sha256_tb.v
+vvp outflow/sha256_sim
+gtkwave outflow/sha256_tb.vcd
 ```
 
 **Test Vectors:**
 Use NIST test vectors:
 - SHA-256: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
 - SHA-3: https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines
+
+**Verification:**
+```bash
+# Automated test vector verification
+python3 testbench/verify_testbench.py
+```
 
 **Hardware Testing:**
 1. Implement UART interface for input/output

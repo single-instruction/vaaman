@@ -4,13 +4,12 @@
 1. [Introduction to Cryptographic Hashing](#introduction-to-cryptographic-hashing)
 2. [SHA-256 Algorithm Deep Dive](#sha-256-algorithm-deep-dive)
 3. [SHA-3 (Keccak) Algorithm Deep Dive](#sha-3-keccak-algorithm-deep-dive)
-4. [Verilog HDL Basics](#verilog-hdl-basics)
+4. [Verilog HDL Fundamentals](#verilog-hdl-fundamentals)
 5. [FPGA Design Considerations](#fpga-design-considerations)
 6. [Implementation Strategy](#implementation-strategy)
 7. [Step-by-Step Implementation](#step-by-step-implementation)
-8. [Simulation and Verification](#simulation-and-verification)
-9. [Optimization Techniques](#optimization-techniques)
-10. [Common Pitfalls](#common-pitfalls)
+8. [Optimization Techniques](#optimization-techniques)
+9. [Common Pitfalls](#common-pitfalls)
 
 ---
 
@@ -400,193 +399,42 @@ SHA-3-256 Output:
 
 ---
 
-## 4. Verilog HDL Basics
+## 4. Verilog HDL Fundamentals
 
-### What is Verilog?
+For comprehensive Verilog HDL basics including module structure, data types, operators, assignments, always blocks, functions, tasks, state machines, and best practices, see **[VERILOG_BASICS.md](VERILOG_BASICS.md)**.
 
-Verilog is a **Hardware Description Language** (HDL), not a programming language. It describes **hardware circuits**, not sequential instructions.
+### Key Verilog Concepts for SHA Implementation
 
-**Key Concept**: Verilog describes parallel hardware that executes simultaneously, not sequential code.
+**Critical Rules:**
+- Use `=` for combinational logic (always @(*))
+- Use `<=` for sequential logic (always @(posedge clk))
+- Verilog describes parallel hardware, not sequential code
 
-### Basic Syntax
+### Cryptography-Specific Patterns
 
-#### Module Declaration
-
-```verilog
-module module_name (
-    input wire clk,           // Clock input
-    input wire rst_n,         // Active-low reset
-    input wire [31:0] data,   // 32-bit input
-    output reg [7:0] result   // 8-bit output register
-);
-
-// Module body
-
-endmodule
-```
-
-#### Data Types
+#### Rotate Functions
 
 ```verilog
-// Wire: Continuous connection (combinational)
-wire [7:0] my_wire;
-
-// Reg: Storage element (can be flip-flop or combinational)
-reg [31:0] my_reg;
-
-// Parameter: Constant
-parameter WIDTH = 32;
-```
-
-**Important**: `reg` doesn't always mean flip-flop! It depends on context.
-
-#### Assignments
-
-```verilog
-// Continuous assignment (combinational)
-assign y = a & b;
-
-// Procedural assignment (in always block)
-always @(*) begin
-    y = a & b;  // Combinational
-end
-
-// Clocked assignment (creates flip-flops)
-always @(posedge clk) begin
-    y <= a & b;  // Sequential
-end
-```
-
-#### Always Blocks
-
-**Combinational Logic:**
-```verilog
-always @(*) begin
-    // Use blocking assignments (=)
-    sum = a + b;
-    result = sum & mask;
-end
-```
-
-**Sequential Logic (Flip-Flops):**
-```verilog
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        counter <= 0;
-    end else begin
-        // Use non-blocking assignments (<=)
-        counter <= counter + 1;
-    end
-end
-```
-
-**Critical Rule**: Use `=` for combinational, `<=` for sequential!
-
-#### Blocking vs Non-Blocking
-
-```verilog
-// BLOCKING (=): Executes in order
-always @(*) begin
-    a = 1;
-    b = a;  // b gets 1
-end
-
-// NON-BLOCKING (<=): Schedules for end of time step
-always @(posedge clk) begin
-    a <= 1;
-    b <= a;  // b gets OLD value of a
-end
-```
-
-**When to use:**
-- Blocking `=`: Combinational logic (always @(*))
-- Non-blocking `<=`: Sequential logic (always @(posedge clk))
-
-#### Operators
-
-```verilog
-// Arithmetic
-+ - * / %
-
-// Bitwise
-& | ^ ~ (AND, OR, XOR, NOT)
-~& ~| ~^ (NAND, NOR, XNOR)
-
-// Logical
-&& || ! (AND, OR, NOT) - returns 1-bit result
-
-// Shift
-<< >> (logical shift)
-<<< >>> (arithmetic shift - sign extend)
-
-// Rotate (not built-in, must implement)
-// Example: rotate right by n
-{data[n-1:0], data[WIDTH-1:n]}
-
-// Reduction
-&data (AND all bits)
-|data (OR all bits)
-^data (XOR all bits - parity)
-
-// Comparison
-== != < > <= >=
-
-// Concatenation
-{a, b, c}  // Combine signals
-
-// Replication
-{4{2'b01}}  // 8'b01010101
-```
-
-#### Functions
-
-```verilog
-function [31:0] rotate_right;
-    input [31:0] value;
-    input [4:0] amount;
-begin
-    rotate_right = {value[amount-1:0], value[31:amount]};
-end
-endfunction
-
-// Usage
-result = rotate_right(data, 5);
-```
-
-#### Case Statements
-
-```verilog
-always @(*) begin
-    case (state)
-        IDLE:   next_state = START;
-        START:  next_state = PROCESS;
-        PROCESS: next_state = DONE;
-        default: next_state = IDLE;
-    endcase
-end
-```
-
-### Common Patterns for Cryptography
-
-#### Rotate Right
-
-```verilog
+// Rotate right (for SHA-256)
 function [31:0] rotr;
     input [31:0] x;
     input [4:0] n;
 begin
-    rotr = {x[n-1:0], x[31:n]};
+    rotr = (x >> n) | (x << (32 - n));
+end
+endfunction
+
+// Rotate left (for SHA-3)
+function [63:0] rotl64;
+    input [63:0] x;
+    input [5:0] n;
+begin
+    rotl64 = (x << n) | (x >> (64 - n));
 end
 endfunction
 ```
 
-#### XOR Multiple Values
-
-```verilog
-assign result = a ^ b ^ c ^ d;
-```
-
-#### Choice Function (SHA-256)
+#### SHA-256 Functions
 
 ```verilog
 function [31:0] ch;
@@ -595,11 +443,7 @@ begin
     ch = (x & y) ^ (~x & z);
 end
 endfunction
-```
 
-#### Majority Function (SHA-256)
-
-```verilog
 function [31:0] maj;
     input [31:0] x, y, z;
 begin
@@ -933,42 +777,36 @@ always @(posedge clk or negedge rst_n) begin
 end
 ```
 
-This is the foundation. I'll create the complete implementations in separate files next.
+This is the foundation. The complete implementations are available in `rtl/sha256_core.v` and `rtl/sha3_core.v`.
 
----
+### Testing and Verification
 
-## 8. Simulation and Verification
+For complete simulation and verification instructions including:
+- iVerilog and GTKWave installation
+- Compiling and running testbenches
+- Analyzing waveforms
+- Writing custom testbenches
+- Debugging techniques
 
-### Test Vector Strategy
+See **[SIMULATION_GUIDE.md](SIMULATION_GUIDE.md)** and **[RESULTS.md](RESULTS.md)** for test results.
 
-**Use NIST test vectors:**
-1. **Empty string** ""
-2. **Short messages** "abc", "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
-3. **Long messages** Million 'a's
-
-### Simulation Flow
-
+**Quick Start:**
 ```bash
-# Compile design and testbench
-iverilog -o sha256_sim sha256_core.v sha256_tb.v
+# SHA-256
+iverilog -o outflow/sha256_sim rtl/sha256_core.v testbench/sha256_tb.v
+vvp outflow/sha256_sim
 
-# Run simulation
-vvp sha256_sim
+# SHA-3
+iverilog -o outflow/sha3_sim rtl/sha3_core.v testbench/sha3_tb.v
+vvp outflow/sha3_sim
 
-# View waveforms
-gtkwave sha256_tb.vcd
+# Verify all test vectors
+python3 testbench/verify_testbench.py
 ```
 
-### What to Check
-
-1. **Functional Correctness**: Output matches expected hash
-2. **Timing**: Ready signal behavior
-3. **State Transitions**: FSM operates correctly
-4. **Edge Cases**: Reset behavior, back-to-back operations
-
 ---
 
-## 9. Optimization Techniques
+## 8. Optimization Techniques
 
 ### After Basic Implementation Works
 
@@ -989,7 +827,7 @@ Example (iterative, 100 MHz):
 
 ---
 
-## 10. Common Pitfalls
+## 9. Common Pitfalls
 
 ### 1. Endianness Issues
 
@@ -1071,20 +909,46 @@ If simulation shows 'X' values:
 
 ## Next Steps
 
-Now that you understand the theory and HDL basics, proceed to:
+### Learning Path
 
-1. **Study the complete SHA-256 implementation** (sha256_core.v)
-2. **Examine the testbench** (sha256_tb.v)
-3. **Run simulations** to see it working
-4. **Study the SHA-3 implementation** (sha3_core.v)
-5. **Modify and experiment** with the code
+1. **Master Verilog HDL**
+   - Read **[VERILOG_BASICS.md](VERILOG_BASICS.md)** for comprehensive HDL fundamentals
+   - Complete the exercises to practice
 
-When your board arrives, you'll:
-1. Create project in Efinity IDE
-2. Import the verified Verilog files
-3. Configure pins and clocks
-4. Synthesize and program
-5. Test on hardware
+2. **Study the Implementations**
+   - Review `rtl/sha256_core.v` - SHA-256 implementation (384 lines)
+   - Review `rtl/sha3_core.v` - SHA-3-256 implementation (357 lines)
+   - Compare with algorithm descriptions in this guide
+
+3. **Run Simulations**
+   - Follow **[SIMULATION_GUIDE.md](SIMULATION_GUIDE.md)** for detailed instructions
+   - Examine testbenches: `testbench/sha256_tb.v` and `testbench/sha3_tb.v`
+   - View test results in **[RESULTS.md](RESULTS.md)**
+
+4. **Experiment**
+   - Modify implementations
+   - Add custom test vectors
+   - Try optimization techniques from Section 8
+
+### Hardware Programming (When Board Arrives)
+
+1. Review **[CLAUDE.md](../CLAUDE.md)** for complete Vaaman FPGA reference
+2. Set up Efinity IDE
+3. Create new project (Trion T120F324)
+4. Import verified Verilog files
+5. Configure pins and clocks
+6. Synthesize and program
+7. Test on hardware
+
+---
+
+## Documentation Reference
+
+- **[VERILOG_BASICS.md](VERILOG_BASICS.md)** - HDL fundamentals, exercises, best practices
+- **[SIMULATION_GUIDE.md](SIMULATION_GUIDE.md)** - iVerilog, GTKWave, debugging
+- **[RESULTS.md](RESULTS.md)** - Test results, performance metrics
+- **[SHA3_DEBUG_LOG.md](SHA3_DEBUG_LOG.md)** - SHA-3 debugging case study
+- **[CLAUDE.md](../CLAUDE.md)** - Complete Vaaman FPGA reference guide
 
 ---
 

@@ -193,13 +193,13 @@ endmodule
 **Compile and Run:**
 ```bash
 # Compile
-iverilog -o counter_sim counter.v counter_tb.v
+iverilog -o outflow/counter_sim counter.v counter_tb.v
 
 # Run simulation
-vvp counter_sim
+vvp outflow/counter_sim
 
 # View waveforms
-gtkwave counter_tb.vcd
+gtkwave outflow/counter_tb.vcd
 ```
 
 ---
@@ -216,7 +216,7 @@ cd /home/zyzyzynn/dev/vaaman
 
 ```bash
 # Compile design and testbench
-iverilog -o sha256_sim rtl/sha256_core.v testbench/sha256_tb.v
+iverilog -o outflow/sha256_sim rtl/sha256_core.v testbench/sha256_tb.v
 
 # Check for compilation errors
 # If successful, no output means compilation passed
@@ -226,7 +226,7 @@ iverilog -o sha256_sim rtl/sha256_core.v testbench/sha256_tb.v
 
 ```bash
 # Execute simulation
-vvp sha256_sim
+vvp outflow/sha256_sim
 ```
 
 **Expected Output:**
@@ -270,7 +270,7 @@ Failed:      0
 
 ```bash
 # Open GTKWave
-gtkwave sha256_tb.vcd
+gtkwave outflow/sha256_tb.vcd
 ```
 
 In GTKWave:
@@ -287,13 +287,13 @@ In GTKWave:
 ### Compile SHA-3
 
 ```bash
-iverilog -o sha3_sim rtl/sha3_core.v testbench/sha3_tb.v
+iverilog -o outflow/sha3_sim rtl/sha3_core.v testbench/sha3_tb.v
 ```
 
 ### Run Simulation
 
 ```bash
-vvp sha3_sim
+vvp outflow/sha3_sim
 ```
 
 **Expected Output:**
@@ -325,7 +325,7 @@ Failed:      0
 ### View Waveforms
 
 ```bash
-gtkwave sha3_tb.vcd
+gtkwave outflow/sha3_tb.vcd
 ```
 
 ---
@@ -746,16 +746,16 @@ Help → Manual
 
 ```bash
 # Compile
-iverilog -o output_file design.v testbench.v
+iverilog -o outflow/output_file design.v testbench.v
 
 # Run simulation
-vvp output_file
+vvp outflow/output_file
 
 # View waveforms
-gtkwave waveform.vcd
+gtkwave outflow/waveform.vcd
 
 # Compile with warnings
-iverilog -Wall -o sim design.v testbench.v
+iverilog -Wall -o outflow/sim design.v testbench.v
 
 # List all modules
 iverilog -M design.v

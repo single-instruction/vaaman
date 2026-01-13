@@ -47,7 +47,8 @@ Status: ALL TESTS PASSED
 
 - Source: `rtl/sha256_core.v` (384 lines)
 - Testbench: `testbench/sha256_tb.v` (219 lines)
-- Waveform: `sha256_tb.vcd` (391 KB)
+- Waveform: `outflow/sha256_tb.vcd` (391 KB)
+- Simulation: `outflow/sha256_sim`
 
 ### Verification
 
@@ -55,6 +56,7 @@ All hashes verified against:
 - NIST SHA-256 test vectors
 - Online SHA-256 calculators
 - Python hashlib.sha256()
+- Automated verification: `testbench/verify_testbench.py`
 
 ### Current Capabilities
 
@@ -72,17 +74,14 @@ Limitations:
 
 ### How to Run
 
+For detailed compilation and simulation instructions, see **[SIMULATION_GUIDE.md](SIMULATION_GUIDE.md)**.
+
+**Quick Start:**
 ```bash
 cd /home/zyzyzynn/dev/vaaman
-
-# Compile
-iverilog -o sha256_sim rtl/sha256_core.v testbench/sha256_tb.v
-
-# Run simulation
-vvp sha256_sim
-
-# View waveforms
-gtkwave sha256_tb.vcd
+iverilog -o outflow/sha256_sim rtl/sha256_core.v testbench/sha256_tb.v
+vvp outflow/sha256_sim
+python3 testbench/verify_testbench.py
 ```
 
 ### Bug Fixes Applied
@@ -192,7 +191,8 @@ Failed:      0
 
 - Source: `rtl/sha3_core.v` (357 lines)
 - Testbench: `testbench/sha3_tb.v` (233 lines)
-- Waveform: `sha3_tb.vcd` (63 KB)
+- Waveform: `outflow/sha3_tb.vcd` (63 KB)
+- Simulation: `outflow/sha3_sim`
 
 ### Verification
 
@@ -200,6 +200,7 @@ All hashes verified against:
 - NIST SHA-3-256 test vectors
 - Python hashlib.sha3_256()
 - Online SHA-3 calculators
+- Automated verification: `testbench/verify_testbench.py`
 
 ### Current Capabilities
 
@@ -217,17 +218,14 @@ Limitations:
 
 ### How to Run
 
+For detailed compilation and simulation instructions, see **[SIMULATION_GUIDE.md](SIMULATION_GUIDE.md)**.
+
+**Quick Start:**
 ```bash
 cd /home/zyzyzynn/dev/vaaman
-
-# Compile
-iverilog -o sha3_sim rtl/sha3_core.v testbench/sha3_tb.v
-
-# Run simulation
-vvp sha3_sim
-
-# View waveforms
-gtkwave sha3_tb.vcd
+iverilog -o outflow/sha3_sim rtl/sha3_core.v testbench/sha3_tb.v
+vvp outflow/sha3_sim
+python3 testbench/verify_testbench.py
 ```
 
 ### Bug Fixes Applied
@@ -260,6 +258,58 @@ The critical difference between SHA-2 (including SHA-256) and SHA-3:
 - **SHA-3**: Uses little-endian byte ordering within each 64-bit lane
 
 This required implementing byte swapping at the interface boundaries while maintaining correct internal lane operations.
+
+---
+
+## Test Vector Verification Script
+
+### verify_testbench.py
+
+A Python script that verifies all testbench hash values against NIST test vectors using Python's hashlib.
+
+**Location:** `testbench/verify_testbench.py`
+
+**Features:**
+- Verifies 7 SHA-256 test cases
+- Verifies 8 SHA-3-256 test cases
+- Uses exact same test vectors as Verilog testbenches
+- Color-coded output (PASS/FAIL)
+- Shows full input messages and expected/computed hashes
+- Validates against Python hashlib implementation
+
+**Usage:**
+```bash
+cd /home/zyzyzynn/dev/vaaman
+python3 testbench/verify_testbench.py
+```
+
+**Expected Output:**
+```
+Testbench Hash Verification Tool
+Verifying against Python hashlib and NIST test vectors
+
+========================================
+SHA-256 Test Vector Verification
+From: testbench/sha256_tb.v
+========================================
+
+Test 1: PASS - Empty string
+...
+Total: 15/15 tests passed
+
+*** ALL TESTS PASSED ***
+All testbench values are correct and match NIST test vectors.
+```
+
+**Test Coverage:**
+- Empty strings
+- Short strings ("abc", "a", "test", "hello")
+- Long strings (56+ characters)
+- Back-to-back hash operations
+- Zero blocks
+
+All test vectors are verified against NIST standards:
+https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
 
 ---
 
@@ -380,6 +430,7 @@ Both implementations demonstrate:
 - **Waveform viewer**: GTKWave
 - **Platform**: Linux
 - **Verification**: NIST test vectors, Python hashlib
+- **Test automation**: `verify_testbench.py` (Python 3)
 
 ---
 
@@ -388,17 +439,26 @@ Both implementations demonstrate:
 ```
 /home/zyzyzynn/dev/vaaman/
 ├── CLAUDE.md              # Complete Vaaman reference guide
-├── SHA_TUTORIAL.md        # Algorithm deep dive
-├── VERILOG_BASICS.md      # HDL learning guide
-├── SIMULATION_GUIDE.md    # Testing and debugging guide
-├── RESULTS.md             # This file - test results
+├── README.md              # Project overview
 ├── LICENSE                # Unlicense (public domain)
+├── docs/
+│   ├── SHA_TUTORIAL.md        # Algorithm deep dive
+│   ├── VERILOG_BASICS.md      # HDL learning guide
+│   ├── SIMULATION_GUIDE.md    # Testing and debugging guide
+│   ├── RESULTS.md             # This file - test results
+│   └── SHA3_DEBUG_LOG.md      # SHA-3 debugging notes
 ├── rtl/
 │   ├── sha256_core.v      # SHA-256 (VERIFIED)
 │   └── sha3_core.v        # SHA-3-256 (VERIFIED)
-└── testbench/
-    ├── sha256_tb.v        # SHA-256 tests (7/7 PASS)
-    └── sha3_tb.v          # SHA-3 tests (8/8 PASS)
+├── testbench/
+│   ├── sha256_tb.v        # SHA-256 tests (7/7 PASS)
+│   ├── sha3_tb.v          # SHA-3 tests (8/8 PASS)
+│   └── verify_testbench.py    # Python verification (15/15 PASS)
+└── outflow/
+    ├── sha256_sim         # SHA-256 compiled simulation
+    ├── sha256_tb.vcd      # SHA-256 waveform data
+    ├── sha3_sim           # SHA-3 compiled simulation
+    └── sha3_tb.vcd        # SHA-3 waveform data
 ```
 
 ---

@@ -7,9 +7,9 @@
  * https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
  *
  * How to run:
- *   iverilog -o sha256_sim ../rtl/sha256_core.v sha256_tb.v
- *   vvp sha256_sim
- *   gtkwave sha256_tb.vcd
+ *   iverilog -o ../outflow/sha256_sim ../rtl/sha256_core.v sha256_tb.v
+ *   vvp ../outflow/sha256_sim
+ *   gtkwave ../outflow/sha256_tb.vcd
  *
  * Expected behavior:
  *   - All test vectors should pass
@@ -55,7 +55,7 @@ module sha256_tb;
 
     // VCD Dump for Waveform Viewing
     initial begin
-        $dumpfile("sha256_tb.vcd");
+        $dumpfile("outflow/sha256_tb.vcd");
         $dumpvars(0, sha256_tb);
     end
 
