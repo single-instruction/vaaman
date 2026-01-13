@@ -54,9 +54,8 @@ def verify_sha256(tests):
 
         print(f"Test {i}: {status} - {description}")
 
-        # Display message (truncate if too long)
-        display_msg = msg if len(msg) <= 40 else msg[:37] + "..."
-        print(f"  Input:    '{display_msg}'")
+        # Display message as-is
+        print(f"  Input:    '{msg}'")
         print(f"  Expected: {format_hash(expected)}")
 
         if not match:
@@ -90,9 +89,8 @@ def verify_sha3(tests):
 
         print(f"Test {i}: {status} - {description}")
 
-        # Display message (truncate if too long)
-        display_msg = msg if len(msg) <= 40 else msg[:37] + "..."
-        print(f"  Input:    '{display_msg}'")
+        # Display message as-is
+        print(f"  Input:    '{msg}'")
         print(f"  Expected: {format_hash(expected)}")
 
         if not match:
